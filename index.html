@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portafolio</title>
+    <meta name="description" content="Portafolio y currículum de desarrollo de software." />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      // Aplica el tema guardado antes de pintar para evitar parpadeos
+      try {
+        const t = localStorage.getItem("tema");
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="contenedor nav__inner">
+        <a href="#inicio" class="nav__logo" id="nav-logo"></a>
+        <nav class="nav__links" id="nav-links">
+          <a href="#sobre-mi">Sobre mí</a>
+          <a href="#habilidades">Habilidades</a>
+          <a href="#experiencia">Trayectoria</a>
+          <a href="#proyectos">Proyectos</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
+        <div class="nav__acciones">
+          <button class="icon-btn" id="btn-tema" aria-label="Cambiar tema" title="Cambiar tema"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+          <button class="icon-btn nav__menu" id="btn-menu" aria-label="Abrir menú" aria-expanded="false">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="inicio" class="hero contenedor">
+        <div class="hero__foto" id="hero-foto"></div>
+        <div>
+          <p class="hero__saludo">Hola, soy</p>
+          <h1 id="hero-nombre"></h1>
+          <p class="hero__rol" id="hero-rol"></p>
+          <p class="hero__resumen" id="hero-resumen"></p>
+          <div class="hero__botones">
+            <a href="#proyectos" class="btn btn--primario">Ver proyectos</a>
+            <a href="#" class="btn" id="btn-cv">Descargar CV</a>
+          </div>
+          <ul class="redes" id="hero-redes"></ul>
+        </div>
+      </section>
+
+      <section id="sobre-mi" class="seccion contenedor">
+        <h2 class="seccion__titulo">Sobre mí</h2>
+        <div class="sobre">
+          <div id="sobre-texto" class="sobre__texto"></div>
+          <aside class="tarjeta sobre__datos">
+            <dl id="sobre-datos"></dl>
+          </aside>
+        </div>
+      </section>
+
+      <section id="habilidades" class="seccion contenedor">
+        <h2 class="seccion__titulo">Habilidades</h2>
+        <div class="habilidades" id="lista-habilidades"></div>
+      </section>
+
+      <section id="experiencia" class="seccion contenedor">
+        <h2 class="seccion__titulo">Trayectoria</h2>
+        <div class="trayectoria">
+          <div>
+            <h3 class="subtitulo">Experiencia</h3>
+            <ol class="timeline" id="lista-experiencia"></ol>
+          </div>
+          <div>
+            <h3 class="subtitulo">Formación</h3>
+            <ol class="timeline" id="lista-formacion"></ol>
+            <div id="bloque-certificaciones" hidden>
+              <h3 class="subtitulo">Certificaciones</h3>
+              <ul class="certificaciones" id="lista-certificaciones"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="proyectos" class="seccion contenedor">
+        <h2 class="seccion__titulo">Proyectos</h2>
+        <div class="filtros" id="filtros" role="toolbar" aria-label="Filtrar por tecnología"></div>
+        <div class="proyectos" id="lista-proyectos"></div>
+      </section>
+
+      <section id="contacto" class="seccion contenedor contacto">
+        <h2 class="seccion__titulo">Contacto</h2>
+        <p>¿Tienes una oferta, una idea o simplemente quieres hablar? Escríbeme.</p>
+        <a class="btn btn--primario" id="contacto-email" href="#"></a>
+        <ul class="redes redes--centro" id="contacto-redes"></ul>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <p id="pie-texto"></p>
+    </footer>
+
+    <dialog class="modal" id="modal-proyecto">
+      <button class="icon-btn modal__cerrar" id="modal-cerrar" aria-label="Cerrar">✕</button>
+      <div id="modal-contenido"></div>
+    </dialog>
+
+    <script src="data/perfil.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
