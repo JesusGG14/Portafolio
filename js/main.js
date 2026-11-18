@@ -20,7 +20,7 @@
       else n.setAttribute(k, v);
     }
     for (const h of hijos.flat()) {
-      if (h === null || h === undefined || h === false) continue;
+      if (h === null || h === undefined || h === false || h === "") continue;
       n.append(h instanceof Node ? h : document.createTextNode(String(h)));
     }
     return n;
@@ -31,17 +31,37 @@
     nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
   const enlaceExterno = (href, texto, clase) =>
     el("a", { href, class: clase, target: "_blank", rel: "noopener noreferrer" }, texto);
+  const etiquetas = (items, clase = "etiquetas") => el("ul", { class: clase }, lista(items).map((i) => el("li", {}, i)));
+  const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
-  /* ---------- Cabecera y hero ---------- */
-  document.title = `${perfil.nombre} · ${perfil.rol}`;
+  const pintarFoto = (cont) =>
+    cont.append(
+      perfil.foto
+        ? el("img", { src: perfil.foto, alt: `Foto de ${perfil.nombre}` })
+        : el("span", {}, iniciales(perfil.nombre))
+    );
+
+  /* ---------- Cabecera ---------- */
+  document.title = `${perfil.nombre} · Portafolio`;
   $("#nav-logo").textContent = iniciales(perfil.nombre);
-  $("#hero-nombre").textContent = perfil.nombre;
-  $("#hero-rol").textContent = perfil.rol;
-  $("#hero-resumen").textContent = perfil.resumen;
 
-  const foto = $("#hero-foto");
-  if (perfil.foto) foto.append(el("img", { src: perfil.foto, alt: `Foto de ${perfil.nombre}` }));
-  else foto.append(el("span", {}, iniciales(perfil.nombre)));
+  /* ---------- Inicio (bandeja de entrada) ---------- */
+  pintarFoto($("#inicio-foto"));
+  $("#inicio-nombre").textContent = perfil.nombre;
+  $("#inicio-rol").textContent = perfil.rol;
+  $("#inicio-resumen").textContent = perfil.resumen;
+  $("#mensaje-sobre").textContent = "Mi perfil profesional, experiencia, formación, conocimientos e idiomas.";
+  $("#mensaje-proyectos").textContent = proyectos.length
+    ? proyectos.map((p) => p.titulo).slice(0, 3).join(" · ") + (proyectos.length > 3 ? " …" : "")
+    : "Próximamente";
+  $("#meta-proyectos").textContent = plural(proyectos.length, "proyecto", "proyectos");
+  $("#bandeja-contador").textContent = "2 secciones";
+
+  /* ---------- Sobre mí (CV) ---------- */
+  pintarFoto($("#cv-foto"));
+  $("#cv-nombre").textContent = perfil.nombre;
+  $("#cv-rol").textContent = perfil.rol;
+  lista(perfil.sobreMi).forEach((p) => $("#cv-sobre").append(el("p", {}, p)));
 
   const btnCv = $("#btn-cv");
   if (perfil.cv) {
@@ -55,78 +75,69 @@
     });
   }
 
-  const pintarRedes = (ul) =>
-    lista(perfil.redes).forEach((r) => ul.append(el("li", {}, enlaceExterno(r.url, r.nombre))));
-  pintarRedes($("#hero-redes"));
-
-  /* ---------- Sobre mí ---------- */
-  lista(perfil.sobreMi).forEach((p) => $("#sobre-texto").append(el("p", {}, p)));
-  const dl = $("#sobre-datos");
+  const dl = $("#cv-datos");
   const dato = (k, v) => v && dl.append(el("dt", {}, k), el("dd", {}, v));
   dato("Ubicación", perfil.ubicacion);
   dato("Email", perfil.email && el("a", { href: `mailto:${perfil.email}` }, perfil.email));
-  dato("Teléfono", perfil.telefono);
-  if (lista(perfil.idiomas).length)
-    dato("Idiomas", perfil.idiomas.map((i) => `${i.idioma} (${i.nivel})`).join(" · "));
+  dato("Teléfono", perfil.telefono && el("a", { href: `tel:${perfil.telefono.replace(/\s/g, "")}` }, perfil.telefono));
+  lista(perfil.redes).forEach((r) => dato(r.nombre, enlaceExterno(r.url, r.url.replace(/^https?:\/\/(www\.)?/, ""))));
+  lista(perfil.datosExtra).forEach((d) => dato(d.etiqueta, d.valor));
 
-  /* ---------- Habilidades ---------- */
   habilidades.forEach((h) =>
-    $("#lista-habilidades").append(
-      el("div", { class: "tarjeta" },
-        el("h3", {}, h.categoria),
-        el("ul", { class: "etiquetas" }, lista(h.items).map((i) => el("li", {}, i)))
-      )
-    )
+    $("#lista-habilidades").append(el("div", { class: "habilidad" }, el("h3", {}, h.categoria), etiquetas(h.items)))
   );
 
-  /* ---------- Experiencia y formación ---------- */
   const itemTimeline = (titulo, lugar, inicio, fin, desc) =>
     el("li", {},
       el("span", { class: "timeline__fecha" }, [inicio, fin].filter(Boolean).join(" — ")),
-      el("h4", {}, titulo),
+      el("h3", {}, titulo),
       el("p", { class: "timeline__lugar" }, lugar),
       Array.isArray(desc)
         ? el("ul", { class: "timeline__desc" }, desc.map((d) => el("li", {}, d)))
         : desc && el("p", { class: "timeline__desc" }, desc)
     );
-
   experiencia.forEach((e) =>
     $("#lista-experiencia").append(itemTimeline(e.puesto, e.empresa, e.inicio, e.fin, e.descripcion))
   );
   formacion.forEach((f) =>
     $("#lista-formacion").append(itemTimeline(f.titulo, f.centro, f.inicio, f.fin, f.descripcion))
   );
+
   if (certificaciones.length) {
     $("#bloque-certificaciones").hidden = false;
-    certificaciones.forEach((c) => {
-      const nombre = c.url ? enlaceExterno(c.url, c.nombre) : c.nombre;
+    certificaciones.forEach((c) =>
       $("#lista-certificaciones").append(
-        el("li", {}, nombre, el("span", {}, ` — ${[c.entidad, c.fecha].filter(Boolean).join(", ")}`))
-      );
-    });
+        el("li", {},
+          el("strong", {}, c.url ? enlaceExterno(c.url, c.nombre) : c.nombre),
+          (c.entidad || c.fecha) && el("span", {}, [c.entidad, c.fecha].filter(Boolean).join(", "))
+        )
+      )
+    );
   }
+  lista(perfil.idiomas).forEach((i) =>
+    $("#lista-idiomas").append(el("li", {}, el("span", {}, i.idioma), el("span", { class: "nivel" }, i.nivel)))
+  );
 
   /* ---------- Proyectos ---------- */
   const ordenados = [...proyectos].sort(
-    (a, b) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0) || String(b.fecha || "").localeCompare(String(a.fecha || ""))
+    (a, b) =>
+      (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0) || String(b.fecha || "").localeCompare(String(a.fecha || ""))
   );
   const contProyectos = $("#lista-proyectos");
   const contFiltros = $("#filtros");
   let filtroActivo = "Todos";
 
   function tarjetaProyecto(p) {
-    const media = p.imagen
-      ? el("img", { src: p.imagen, alt: "", loading: "lazy" })
-      : el("span", {}, iniciales(p.titulo));
+    const media = p.imagen ? el("img", { src: p.imagen, alt: "", loading: "lazy" }) : el("span", {}, iniciales(p.titulo));
     return el("article", { class: "tarjeta proyecto" + (p.destacado ? " proyecto--destacado" : "") },
       el("button", { class: "proyecto__media", "aria-label": `Ver detalles de ${p.titulo}`, onclick: () => abrirProyecto(p) }, media),
       el("div", { class: "proyecto__cuerpo" },
         el("div", { class: "proyecto__cabecera" },
           el("h3", {}, p.titulo),
-          p.fecha && el("span", { class: "proyecto__fecha" }, p.fecha)
+          p.fecha && el("span", { class: "fecha" }, p.fecha)
         ),
         el("p", {}, p.resumen),
-        el("ul", { class: "etiquetas etiquetas--peq" }, lista(p.tecnologias).map((t) => el("li", {}, t))),
+        etiquetas(p.tecnologias, "etiquetas etiquetas--peq"),
         el("div", { class: "proyecto__enlaces" },
           el("button", { class: "enlace", onclick: () => abrirProyecto(p) }, "Detalles"),
           p.repo && enlaceExterno(p.repo, "Código", "enlace"),
@@ -137,19 +148,19 @@
   }
 
   function pintarProyectos() {
-    contProyectos.replaceChildren();
     const visibles = ordenados.filter(
       (p) => filtroActivo === "Todos" || lista(p.tecnologias).includes(filtroActivo)
     );
-    if (!visibles.length) contProyectos.append(el("p", { class: "vacio" }, "Aún no hay proyectos aquí."));
-    visibles.forEach((p) => contProyectos.append(tarjetaProyecto(p)));
+    contProyectos.replaceChildren(
+      ...(visibles.length ? visibles.map(tarjetaProyecto) : [el("p", { class: "vacio" }, "Aún no hay proyectos aquí.")])
+    );
     contFiltros.querySelectorAll("button").forEach((b) =>
       b.setAttribute("aria-pressed", String(b.dataset.filtro === filtroActivo))
     );
   }
 
   const tecnologias = [...new Set(proyectos.flatMap((p) => lista(p.tecnologias)))].sort();
-  if (tecnologias.length > 1) {
+  if (proyectos.length > 1 && tecnologias.length > 1) {
     ["Todos", ...tecnologias].forEach((t) =>
       contFiltros.append(
         el("button", { class: "filtro", "data-filtro": t, onclick: () => { filtroActivo = t; pintarProyectos(); } }, t)
@@ -161,28 +172,46 @@
   /* ---------- Modal de proyecto ---------- */
   const modal = $("#modal-proyecto");
   function abrirProyecto(p) {
-    $("#modal-contenido").replaceChildren(...[
-      p.imagen && el("img", { class: "modal__img", src: p.imagen, alt: "" }),
-      el("h3", {}, p.titulo),
-      p.fecha && el("p", { class: "proyecto__fecha" }, p.fecha),
-      el("ul", { class: "etiquetas etiquetas--peq" }, lista(p.tecnologias).map((t) => el("li", {}, t))),
-      (lista(p.descripcion).length ? lista(p.descripcion) : [p.resumen]).map((d) => el("p", {}, d)),
-      el("div", { class: "hero__botones" },
-        p.repo && enlaceExterno(p.repo, "Ver código", "btn"),
-        p.demo && enlaceExterno(p.demo, "Ver demo", "btn btn--primario")
-      ),
-    ].flat().filter(Boolean));
+    const parrafos = lista(p.descripcion).length ? lista(p.descripcion) : [p.resumen];
+    $("#modal-contenido").replaceChildren(
+      ...[
+        p.imagen && el("img", { class: "modal__img", src: p.imagen, alt: "" }),
+        el("h3", {}, p.titulo),
+        p.fecha && el("p", { class: "fecha" }, p.fecha),
+        etiquetas(p.tecnologias, "etiquetas etiquetas--peq"),
+        ...parrafos.map((d) => el("p", {}, d)),
+        el("div", { class: "botones" },
+          p.repo && enlaceExterno(p.repo, "Ver código", "btn"),
+          p.demo && enlaceExterno(p.demo, "Ver demo", "btn btn--primario")
+        ),
+      ].filter(Boolean)
+    );
     modal.showModal();
   }
   $("#modal-cerrar").addEventListener("click", () => modal.close());
   modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
 
-  /* ---------- Contacto y pie ---------- */
-  const mail = $("#contacto-email");
-  mail.href = `mailto:${perfil.email}`;
-  mail.textContent = perfil.email;
-  pintarRedes($("#contacto-redes"));
+  /* ---------- Pie ---------- */
+  lista(perfil.redes).forEach((r) => $("#pie-redes").append(el("li", {}, enlaceExterno(r.url, r.nombre))));
+  if (perfil.email)
+    $("#pie-redes").append(el("li", {}, el("a", { href: `mailto:${perfil.email}` }, "Email")));
   $("#pie-texto").textContent = `© ${new Date().getFullYear()} ${perfil.nombre}`;
+
+  /* ---------- Navegación entre vistas (#, #sobre-mi, #proyectos) ---------- */
+  const vistas = [...document.querySelectorAll("main > .vista")];
+  const tabs = [...document.querySelectorAll(".tabs a")];
+  function mostrarVista() {
+    const id = location.hash.slice(1);
+    const actual = vistas.some((v) => v.dataset.vista === id) ? id : "inicio";
+    vistas.forEach((v) => (v.hidden = v.dataset.vista !== actual));
+    tabs.forEach((t) =>
+      t.dataset.vista === actual ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current")
+    );
+    document.body.dataset.vista = actual;
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", mostrarVista);
+  mostrarVista();
 
   /* ---------- Tema claro/oscuro ---------- */
   $("#btn-tema").addEventListener("click", () => {
@@ -192,19 +221,5 @@
       (!raiz.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
     raiz.dataset.theme = oscuroActual ? "light" : "dark";
     try { localStorage.setItem("tema", raiz.dataset.theme); } catch (e) {}
-  });
-
-  /* ---------- Menú móvil ---------- */
-  const btnMenu = $("#btn-menu");
-  const links = $("#nav-links");
-  btnMenu.addEventListener("click", () => {
-    const abierto = links.classList.toggle("abierto");
-    btnMenu.setAttribute("aria-expanded", String(abierto));
-  });
-  links.addEventListener("click", (e) => {
-    if (e.target.tagName === "A") {
-      links.classList.remove("abierto");
-      btnMenu.setAttribute("aria-expanded", "false");
-    }
   });
 })();

@@ -1,6 +1,11 @@
 # Portafolio / Currículum web
 
-Web personal estática (HTML + CSS + JavaScript, sin dependencias ni compilación) que sirve como currículum informático: presentación, sobre mí, habilidades, experiencia, formación, proyectos y contacto.
+Web personal estática (HTML + CSS + JavaScript, sin dependencias ni compilación) que sirve como currículum informático.
+
+Tiene tres vistas:
+- **Inicio** (`#`): presentación y una *bandeja de entrada* con acceso a las secciones.
+- **Sobre mí** (`#sobre-mi`): el currículum completo y botón para descargar el CV en PDF.
+- **Proyectos** (`#proyectos`): tarjetas de proyectos con filtro por tecnología.
 
 ## Características
 
@@ -9,7 +14,7 @@ Web personal estática (HTML + CSS + JavaScript, sin dependencias ni compilació
 - Filtro de proyectos por tecnología (se genera solo).
 - Tema claro/oscuro automático con botón para cambiarlo.
 - Adaptada a móvil.
-- **Versión imprimible**: el botón "Imprimir CV" (o `Ctrl+P` → Guardar como PDF) genera un CV limpio a partir de la web.
+- **Versión imprimible**: `Ctrl+P` → Guardar como PDF imprime siempre el currículum (vista "Sobre mí").
 
 ## Estructura
 
