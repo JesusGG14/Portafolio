@@ -68,11 +68,7 @@
     btnCv.href = perfil.cv;
     btnCv.setAttribute("download", "");
   } else {
-    btnCv.textContent = "Imprimir CV";
-    btnCv.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.print();
-    });
+    btnCv.hidden = true;
   }
 
   const dl = $("#cv-datos");
